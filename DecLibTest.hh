@@ -214,6 +214,7 @@ class DecManager:public TObject
 	void SetNBuffers(int _NBuffers);
 	void SetBufferSize(int _BufSize);
 	void Reopen();
+	void Reset();
 	bool ThereAreNotFinishedFiles=false;
 	bool FileReadingFinished=false;
 	ULong64_t PrevWord=0;

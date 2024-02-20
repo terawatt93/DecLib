@@ -1085,6 +1085,15 @@ void DecManager::Reopen()
 		Files[i]->Open(Files[i]->Name);
 	}
 }
+void DecManager::Reset()
+{
+	for(unsigned int i=0;i<Buffers.size();i++)
+	{
+		Buffers[i].Reset();
+	}
+	Files.resize(0);
+	FileReadingFinished=false;
+}
 bool DecManager::IsAnalysisFinished()
 {
 	for(unsigned int i=0;i<Buffers.size();i++)
