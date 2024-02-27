@@ -827,7 +827,6 @@ void CheckAndFillBuffers(vector<DataBuffer> *Buffers,DecFile *f,ULong64_t &PrevW
 			break;
 		}
 	}
-	
 	DecManager::Instance().FillingNow=false;
 }
 
@@ -877,18 +876,6 @@ void DecManager::FillBuffersInCycle()
 			}
 			ContinueReading=false;
 			CheckAndFillBuffers(&Buffers,ActiveFile,PrevWord);
-			//ReadyForRead=true;
-		//	cout<<"buffer was read\n";
-			if(!Initialized)
-			{
-				/*for(unsigned int i=0;i<ActiveBuffers.size();i++)
-				{
-					ActiveBuffers[i]=&Buffers[i];
-					ActiveBuffers[i]->Active=true;
-					ActiveBuffers[i]->ThreadID=i;
-					//InitializedForThread[i]=true;
-				}*/
-			}
 			Initialized=true;
 			ContinueReading=true;
 		}
@@ -952,11 +939,10 @@ bool DecManager::GetNextEvent(Event *ev, int ThreadID)
 		cout<<"This is DecManager::GetNextEvent(Event *ev, int ThreadID): Invalid ThreadID, NThreads="<<NThreads<<", ThreadID="<<ThreadID<<". False returned!\n";
 		return false;
 	}
-	//while(!Initialized)
 	while(!InitializedForThread[ThreadID])
 	{
 		std::this_thread::sleep_for(std::chrono::microseconds(1));
-		if(FileReadingFinished)
+		if((FileReadingFinished)&&(!InitializedForThread[ThreadID]))
 		{
 			return false;
 		}

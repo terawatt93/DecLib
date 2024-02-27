@@ -5,7 +5,7 @@
 #include <fstream>
 #include <iostream>
 
-void Minimal(string filename="test72_HPGe_2_LaBr_4_Ing27_30perc_C_Ba_Cs_Co.dec")
+void Minimal(string filename="run07_TUMC_Co_top.dec")
 {
 	ROOT::EnableThreadSafety();
 	TH1::AddDirectory(false);
@@ -21,7 +21,7 @@ void Minimal(string filename="test72_HPGe_2_LaBr_4_Ing27_30perc_C_Ba_Cs_Co.dec")
 
 	while(dm.GetNextEvent(&ev,0))
 	{
-		Pulse* pulse_hpge=ev.GetPulse(16);//импульс с hpge детектора
+		Pulse* pulse_hpge=ev.GetPulse(17);//импульс с hpge детектора
 		if(pulse_hpge)//если в событии этот импульс есть
 		{
 			Spectrum.Fill(pulse_hpge->Area);

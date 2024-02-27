@@ -1,0 +1,7 @@
+[ DecLibTest.so ]
+# List of selected classes
+class DecFile
+class DecManager
+class Event
+class Pulse
+header DecLibTest.hh
