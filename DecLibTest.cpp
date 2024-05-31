@@ -1095,3 +1095,13 @@ bool DecManager::IsAnalysisFinished()
 	}
 	return false;
 }
+vector<Event> DecManager::GetVectorOfEvents(int size,int ThreadID)
+{
+	vector<Event> result;
+	Event ev;
+	while((GetNextEvent(&ev,ThreadID))&&(int(result.size())<=size))
+	{
+		result.push_back(ev);
+	}
+	return result;
+}

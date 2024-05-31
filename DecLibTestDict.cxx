@@ -457,7 +457,7 @@ namespace ROOT {
       instance.SetDestructor(&destruct_vectorlEboolgR);
       instance.AdoptCollectionProxyInfo(TCollectionProxyInfo::Generate(TCollectionProxyInfo::Pushback< vector<bool> >()));
 
-      ::ROOT::AddClassAlternate("vector<bool>","std::vector<bool, std::allocator<bool> >");
+      instance.AdoptAlternate(::ROOT::AddClassAlternate("vector<bool>","std::vector<bool, std::allocator<bool> >"));
       return &instance;
    }
    // Static variable to force the class initialization
@@ -478,10 +478,10 @@ namespace ROOT {
 namespace ROOT {
    // Wrappers around operator new
    static void *new_vectorlEboolgR(void *p) {
-      return  p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<bool> : new vector<bool>;
+      return  p ? ::new(static_cast<::ROOT::Internal::TOperatorNewHelper*>(p)) vector<bool> : new vector<bool>;
    }
    static void *newArray_vectorlEboolgR(Long_t nElements, void *p) {
-      return p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<bool>[nElements] : new vector<bool>[nElements];
+      return p ? ::new(static_cast<::ROOT::Internal::TOperatorNewHelper*>(p)) vector<bool>[nElements] : new vector<bool>[nElements];
    }
    // Wrapper around operator delete
    static void delete_vectorlEboolgR(void *p) {
@@ -522,7 +522,7 @@ namespace ROOT {
       instance.SetDestructor(&destruct_vectorlEULong64_tgR);
       instance.AdoptCollectionProxyInfo(TCollectionProxyInfo::Generate(TCollectionProxyInfo::Pushback< vector<ULong64_t> >()));
 
-      ::ROOT::AddClassAlternate("vector<ULong64_t>","std::vector<unsigned long long, std::allocator<unsigned long long> >");
+      instance.AdoptAlternate(::ROOT::AddClassAlternate("vector<ULong64_t>","std::vector<unsigned long long, std::allocator<unsigned long long> >"));
       return &instance;
    }
    // Static variable to force the class initialization
@@ -543,10 +543,10 @@ namespace ROOT {
 namespace ROOT {
    // Wrappers around operator new
    static void *new_vectorlEULong64_tgR(void *p) {
-      return  p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<ULong64_t> : new vector<ULong64_t>;
+      return  p ? ::new(static_cast<::ROOT::Internal::TOperatorNewHelper*>(p)) vector<ULong64_t> : new vector<ULong64_t>;
    }
    static void *newArray_vectorlEULong64_tgR(Long_t nElements, void *p) {
-      return p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<ULong64_t>[nElements] : new vector<ULong64_t>[nElements];
+      return p ? ::new(static_cast<::ROOT::Internal::TOperatorNewHelper*>(p)) vector<ULong64_t>[nElements] : new vector<ULong64_t>[nElements];
    }
    // Wrapper around operator delete
    static void delete_vectorlEULong64_tgR(void *p) {
@@ -587,7 +587,7 @@ namespace ROOT {
       instance.SetDestructor(&destruct_vectorlEPulsegR);
       instance.AdoptCollectionProxyInfo(TCollectionProxyInfo::Generate(TCollectionProxyInfo::Pushback< vector<Pulse> >()));
 
-      ::ROOT::AddClassAlternate("vector<Pulse>","std::vector<Pulse, std::allocator<Pulse> >");
+      instance.AdoptAlternate(::ROOT::AddClassAlternate("vector<Pulse>","std::vector<Pulse, std::allocator<Pulse> >"));
       return &instance;
    }
    // Static variable to force the class initialization
@@ -608,10 +608,10 @@ namespace ROOT {
 namespace ROOT {
    // Wrappers around operator new
    static void *new_vectorlEPulsegR(void *p) {
-      return  p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<Pulse> : new vector<Pulse>;
+      return  p ? ::new(static_cast<::ROOT::Internal::TOperatorNewHelper*>(p)) vector<Pulse> : new vector<Pulse>;
    }
    static void *newArray_vectorlEPulsegR(Long_t nElements, void *p) {
-      return p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<Pulse>[nElements] : new vector<Pulse>[nElements];
+      return p ? ::new(static_cast<::ROOT::Internal::TOperatorNewHelper*>(p)) vector<Pulse>[nElements] : new vector<Pulse>[nElements];
    }
    // Wrapper around operator delete
    static void delete_vectorlEPulsegR(void *p) {
@@ -652,7 +652,7 @@ namespace ROOT {
       instance.SetDestructor(&destruct_vectorlEPulsemUgR);
       instance.AdoptCollectionProxyInfo(TCollectionProxyInfo::Generate(TCollectionProxyInfo::Pushback< vector<Pulse*> >()));
 
-      ::ROOT::AddClassAlternate("vector<Pulse*>","std::vector<Pulse*, std::allocator<Pulse*> >");
+      instance.AdoptAlternate(::ROOT::AddClassAlternate("vector<Pulse*>","std::vector<Pulse*, std::allocator<Pulse*> >"));
       return &instance;
    }
    // Static variable to force the class initialization
@@ -673,10 +673,10 @@ namespace ROOT {
 namespace ROOT {
    // Wrappers around operator new
    static void *new_vectorlEPulsemUgR(void *p) {
-      return  p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<Pulse*> : new vector<Pulse*>;
+      return  p ? ::new(static_cast<::ROOT::Internal::TOperatorNewHelper*>(p)) vector<Pulse*> : new vector<Pulse*>;
    }
    static void *newArray_vectorlEPulsemUgR(Long_t nElements, void *p) {
-      return p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<Pulse*>[nElements] : new vector<Pulse*>[nElements];
+      return p ? ::new(static_cast<::ROOT::Internal::TOperatorNewHelper*>(p)) vector<Pulse*>[nElements] : new vector<Pulse*>[nElements];
    }
    // Wrapper around operator delete
    static void delete_vectorlEPulsemUgR(void *p) {
@@ -717,7 +717,7 @@ namespace ROOT {
       instance.SetDestructor(&destruct_vectorlELong64_tgR);
       instance.AdoptCollectionProxyInfo(TCollectionProxyInfo::Generate(TCollectionProxyInfo::Pushback< vector<Long64_t> >()));
 
-      ::ROOT::AddClassAlternate("vector<Long64_t>","std::vector<long long, std::allocator<long long> >");
+      instance.AdoptAlternate(::ROOT::AddClassAlternate("vector<Long64_t>","std::vector<long long, std::allocator<long long> >"));
       return &instance;
    }
    // Static variable to force the class initialization
@@ -738,10 +738,10 @@ namespace ROOT {
 namespace ROOT {
    // Wrappers around operator new
    static void *new_vectorlELong64_tgR(void *p) {
-      return  p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<Long64_t> : new vector<Long64_t>;
+      return  p ? ::new(static_cast<::ROOT::Internal::TOperatorNewHelper*>(p)) vector<Long64_t> : new vector<Long64_t>;
    }
    static void *newArray_vectorlELong64_tgR(Long_t nElements, void *p) {
-      return p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<Long64_t>[nElements] : new vector<Long64_t>[nElements];
+      return p ? ::new(static_cast<::ROOT::Internal::TOperatorNewHelper*>(p)) vector<Long64_t>[nElements] : new vector<Long64_t>[nElements];
    }
    // Wrapper around operator delete
    static void delete_vectorlELong64_tgR(void *p) {
@@ -782,7 +782,7 @@ namespace ROOT {
       instance.SetDestructor(&destruct_vectorlEDataBuffergR);
       instance.AdoptCollectionProxyInfo(TCollectionProxyInfo::Generate(TCollectionProxyInfo::Pushback< vector<DataBuffer> >()));
 
-      ::ROOT::AddClassAlternate("vector<DataBuffer>","std::vector<DataBuffer, std::allocator<DataBuffer> >");
+      instance.AdoptAlternate(::ROOT::AddClassAlternate("vector<DataBuffer>","std::vector<DataBuffer, std::allocator<DataBuffer> >"));
       return &instance;
    }
    // Static variable to force the class initialization
@@ -803,10 +803,10 @@ namespace ROOT {
 namespace ROOT {
    // Wrappers around operator new
    static void *new_vectorlEDataBuffergR(void *p) {
-      return  p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<DataBuffer> : new vector<DataBuffer>;
+      return  p ? ::new(static_cast<::ROOT::Internal::TOperatorNewHelper*>(p)) vector<DataBuffer> : new vector<DataBuffer>;
    }
    static void *newArray_vectorlEDataBuffergR(Long_t nElements, void *p) {
-      return p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<DataBuffer>[nElements] : new vector<DataBuffer>[nElements];
+      return p ? ::new(static_cast<::ROOT::Internal::TOperatorNewHelper*>(p)) vector<DataBuffer>[nElements] : new vector<DataBuffer>[nElements];
    }
    // Wrapper around operator delete
    static void delete_vectorlEDataBuffergR(void *p) {

@@ -139,7 +139,7 @@ class Pulse:public TObject
 	double Time;
 	double Width;
 	double Height;
-	unsigned char Chan;
+	unsigned int Chan;
 	Event *fEvent;//!
 	ClassDef(Pulse,1);
 };
