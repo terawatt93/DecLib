@@ -79,6 +79,7 @@ void HistManager::Merge()
 	{
 		if(!dm.IsAnalysisFinished())
 		{
+			cout<<"sleep "<<this_thread::get_id()<<"\n";
 			std::this_thread::sleep_for(std::chrono::seconds(1));
 		}
 		else
@@ -239,7 +240,7 @@ void DataBuffer::Read(gzFile ff,ULong64_t &PrevWord)
 	{
 		int res=gzread(ff,&Buf[LastWord],8);
 		//if((!res)||(fDecManager->NEvents>5e7))
-		if(!res)
+		if((!res)||((fDecManager->NEventsPerThread[ThreadID]>fDecManager->MaxNEvents)&&(fDecManager->MaxNEvents>0)))
 		{
 			FileEnded=true;
 			ReadyForRead=true;
@@ -966,8 +967,9 @@ bool DecManager::GetNextEvent(Event *ev, int ThreadID)
 		cout<<"ActiveBuffers["<<ThreadID<<"]->NReadEvents "<<ActiveBuffers[ThreadID]->NReadEvents<<" "<<ActiveBuffers[ThreadID]->NEvents<<"\n";
 		ofs.close();
 		ActiveBuffers[ThreadID]->Reset();*/
+		//cout<<"Reset buffer "<<ThreadID<<"\n";
 		ActiveBuffers[ThreadID]->Reset();
-
+		//cout<<"Assign next buffer for "<<ThreadID<<"\n";
 		while(!AssignBuffers(ThreadID))
 		{
 			if(!FileReadingFinished)
@@ -976,11 +978,17 @@ bool DecManager::GetNextEvent(Event *ev, int ThreadID)
 			}
 			else
 			{
+				cout<<"FileReadingFinished signal obtained! "<<ThreadID<<"\n";
 				return false;
 			}
 		}
-		return ActiveBuffers[ThreadID]->GetNextEvent(ev);
+		if(ActiveBuffers[ThreadID]->GetNextEvent(ev))
+		{
+			return true;
+		}
+		ActiveBuffers[ThreadID]->Active=false;
 	}
+	return false;
 		/*if(!AssignBuffers(ThreadID))
 		{
 			while(1)
@@ -1084,6 +1092,7 @@ bool DecManager::IsAnalysisFinished()
 {
 	for(unsigned int i=0;i<Buffers.size();i++)
 	{
+		//cout<<"Buffers["<<i<<"] "<<Buffers[i].Active<<"\n";
 		if(Buffers[i].Active)
 		{
 			return false;
@@ -1093,6 +1102,7 @@ bool DecManager::IsAnalysisFinished()
 	{
 		return true;
 	}
+	cout<<"DecManager::IsAnalysisFinished(): return false\n";
 	return false;
 }
 vector<Event> DecManager::GetVectorOfEvents(int size,int ThreadID)

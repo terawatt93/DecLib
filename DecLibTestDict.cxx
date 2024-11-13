@@ -446,7 +446,7 @@ namespace ROOT {
       vector<bool> *ptr = nullptr;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<bool>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<bool>", -2, "vector", 596,
+         instance("vector<bool>", -2, "vector", 592,
                   typeid(vector<bool>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &vectorlEboolgR_Dictionary, isa_proxy, 0,
                   sizeof(vector<bool>) );
@@ -478,10 +478,10 @@ namespace ROOT {
 namespace ROOT {
    // Wrappers around operator new
    static void *new_vectorlEboolgR(void *p) {
-      return  p ? ::new(static_cast<::ROOT::Internal::TOperatorNewHelper*>(p)) vector<bool> : new vector<bool>;
+      return  p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<bool> : new vector<bool>;
    }
    static void *newArray_vectorlEboolgR(Long_t nElements, void *p) {
-      return p ? ::new(static_cast<::ROOT::Internal::TOperatorNewHelper*>(p)) vector<bool>[nElements] : new vector<bool>[nElements];
+      return p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<bool>[nElements] : new vector<bool>[nElements];
    }
    // Wrapper around operator delete
    static void delete_vectorlEboolgR(void *p) {
@@ -511,7 +511,7 @@ namespace ROOT {
       vector<ULong64_t> *ptr = nullptr;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<ULong64_t>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<ULong64_t>", -2, "vector", 389,
+         instance("vector<ULong64_t>", -2, "vector", 386,
                   typeid(vector<ULong64_t>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &vectorlEULong64_tgR_Dictionary, isa_proxy, 0,
                   sizeof(vector<ULong64_t>) );
@@ -543,10 +543,10 @@ namespace ROOT {
 namespace ROOT {
    // Wrappers around operator new
    static void *new_vectorlEULong64_tgR(void *p) {
-      return  p ? ::new(static_cast<::ROOT::Internal::TOperatorNewHelper*>(p)) vector<ULong64_t> : new vector<ULong64_t>;
+      return  p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<ULong64_t> : new vector<ULong64_t>;
    }
    static void *newArray_vectorlEULong64_tgR(Long_t nElements, void *p) {
-      return p ? ::new(static_cast<::ROOT::Internal::TOperatorNewHelper*>(p)) vector<ULong64_t>[nElements] : new vector<ULong64_t>[nElements];
+      return p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<ULong64_t>[nElements] : new vector<ULong64_t>[nElements];
    }
    // Wrapper around operator delete
    static void delete_vectorlEULong64_tgR(void *p) {
@@ -576,7 +576,7 @@ namespace ROOT {
       vector<Pulse> *ptr = nullptr;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<Pulse>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<Pulse>", -2, "vector", 389,
+         instance("vector<Pulse>", -2, "vector", 386,
                   typeid(vector<Pulse>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &vectorlEPulsegR_Dictionary, isa_proxy, 0,
                   sizeof(vector<Pulse>) );
@@ -608,10 +608,10 @@ namespace ROOT {
 namespace ROOT {
    // Wrappers around operator new
    static void *new_vectorlEPulsegR(void *p) {
-      return  p ? ::new(static_cast<::ROOT::Internal::TOperatorNewHelper*>(p)) vector<Pulse> : new vector<Pulse>;
+      return  p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<Pulse> : new vector<Pulse>;
    }
    static void *newArray_vectorlEPulsegR(Long_t nElements, void *p) {
-      return p ? ::new(static_cast<::ROOT::Internal::TOperatorNewHelper*>(p)) vector<Pulse>[nElements] : new vector<Pulse>[nElements];
+      return p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<Pulse>[nElements] : new vector<Pulse>[nElements];
    }
    // Wrapper around operator delete
    static void delete_vectorlEPulsegR(void *p) {
@@ -641,7 +641,7 @@ namespace ROOT {
       vector<Pulse*> *ptr = nullptr;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<Pulse*>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<Pulse*>", -2, "vector", 389,
+         instance("vector<Pulse*>", -2, "vector", 386,
                   typeid(vector<Pulse*>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &vectorlEPulsemUgR_Dictionary, isa_proxy, 0,
                   sizeof(vector<Pulse*>) );
@@ -673,10 +673,10 @@ namespace ROOT {
 namespace ROOT {
    // Wrappers around operator new
    static void *new_vectorlEPulsemUgR(void *p) {
-      return  p ? ::new(static_cast<::ROOT::Internal::TOperatorNewHelper*>(p)) vector<Pulse*> : new vector<Pulse*>;
+      return  p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<Pulse*> : new vector<Pulse*>;
    }
    static void *newArray_vectorlEPulsemUgR(Long_t nElements, void *p) {
-      return p ? ::new(static_cast<::ROOT::Internal::TOperatorNewHelper*>(p)) vector<Pulse*>[nElements] : new vector<Pulse*>[nElements];
+      return p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<Pulse*>[nElements] : new vector<Pulse*>[nElements];
    }
    // Wrapper around operator delete
    static void delete_vectorlEPulsemUgR(void *p) {
@@ -706,7 +706,7 @@ namespace ROOT {
       vector<Long64_t> *ptr = nullptr;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<Long64_t>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<Long64_t>", -2, "vector", 389,
+         instance("vector<Long64_t>", -2, "vector", 386,
                   typeid(vector<Long64_t>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &vectorlELong64_tgR_Dictionary, isa_proxy, 0,
                   sizeof(vector<Long64_t>) );
@@ -738,10 +738,10 @@ namespace ROOT {
 namespace ROOT {
    // Wrappers around operator new
    static void *new_vectorlELong64_tgR(void *p) {
-      return  p ? ::new(static_cast<::ROOT::Internal::TOperatorNewHelper*>(p)) vector<Long64_t> : new vector<Long64_t>;
+      return  p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<Long64_t> : new vector<Long64_t>;
    }
    static void *newArray_vectorlELong64_tgR(Long_t nElements, void *p) {
-      return p ? ::new(static_cast<::ROOT::Internal::TOperatorNewHelper*>(p)) vector<Long64_t>[nElements] : new vector<Long64_t>[nElements];
+      return p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<Long64_t>[nElements] : new vector<Long64_t>[nElements];
    }
    // Wrapper around operator delete
    static void delete_vectorlELong64_tgR(void *p) {
@@ -771,7 +771,7 @@ namespace ROOT {
       vector<DataBuffer> *ptr = nullptr;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<DataBuffer>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<DataBuffer>", -2, "vector", 389,
+         instance("vector<DataBuffer>", -2, "vector", 386,
                   typeid(vector<DataBuffer>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &vectorlEDataBuffergR_Dictionary, isa_proxy, 0,
                   sizeof(vector<DataBuffer>) );
@@ -803,10 +803,10 @@ namespace ROOT {
 namespace ROOT {
    // Wrappers around operator new
    static void *new_vectorlEDataBuffergR(void *p) {
-      return  p ? ::new(static_cast<::ROOT::Internal::TOperatorNewHelper*>(p)) vector<DataBuffer> : new vector<DataBuffer>;
+      return  p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<DataBuffer> : new vector<DataBuffer>;
    }
    static void *newArray_vectorlEDataBuffergR(Long_t nElements, void *p) {
-      return p ? ::new(static_cast<::ROOT::Internal::TOperatorNewHelper*>(p)) vector<DataBuffer>[nElements] : new vector<DataBuffer>[nElements];
+      return p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<DataBuffer>[nElements] : new vector<DataBuffer>[nElements];
    }
    // Wrapper around operator delete
    static void delete_vectorlEDataBuffergR(void *p) {
@@ -828,8 +828,8 @@ namespace {
 nullptr
     };
     static const char* includePaths[] = {
-"/home/terawatt/Programs/root/root-install/include/",
-"/home/terawatt/Programs/declib/",
+"/home/tangra/Program/root/root-install/include/",
+"/home/tangra/Program/declib/",
 nullptr
     };
     static const char* fwdDeclCode = R"DICTFWDDCLS(

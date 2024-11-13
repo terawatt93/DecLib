@@ -228,6 +228,7 @@ class DecManager:public TObject
 	void FillBuffersInCycle();
 	void Start();
 	ULong64_t NEvents=0;
+	ULong64_t MaxNEvents=0;
 	bool ContinueReading=false;
 	bool IsAnalysisFinished();
 	vector<ULong64_t> NEventsPerThread;
