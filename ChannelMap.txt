@@ -1,0 +1,14 @@
+Alpha: 0 0
+Alpha: 1 1
+Alpha: 2 2
+Alpha: 3 3
+Alpha: 4 4
+Alpha: 5 5
+Alpha: 6 6
+Alpha: 7 7
+Alpha: 8 8
+Gamma: 16 5
+Gamma: 17 0
+Gamma: 18 1
+Gamma: 19 2
+Gamma: 20 3

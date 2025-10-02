@@ -83,6 +83,7 @@ class DataBuffer
 	float AverageSize=0;
 	bool FileEnded=false;
 	const Long64_t sixbytes=0xFFFFFFFFFFFF;
+	Long64_t LastTstmp=0;
 	DataBuffer(int _BufferLength=0);
 	void SetSize(int size);
 	void Reset();

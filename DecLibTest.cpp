@@ -340,6 +340,7 @@ bool DataBuffer::GetNextEvent(Event *ev)
 		if(GetFrmt(&Buf[LastRead]))
 		{
 			Long64_t Timestamp=Buf[LastRead] & sixbytes;
+			LastTstmp=Timestamp;
 			if(!ev)
 			{
 				ev=new Event();
@@ -378,7 +379,10 @@ bool DataBuffer::GetNextEvent(Event *ev)
 			}
 		}
 	}
-	cout<<"Buf:"<<ID<<" Nevents NReadEvents:"<<NEvents<<" "<<NReadEvents<<"\n";
+	int Seconds=int((double)LastTstmp/1e8)%60;
+	int Minutes=(int((double)LastTstmp/1e8)%3600)/60;
+	int Hours=int((double)LastTstmp/1e8)/3600;
+	cout<<"Buf:"<<ID<<" Nevents NReadEvents:"<<NEvents<<" "<<NReadEvents<<" ("<<Hours<<":"<<Minutes<<":"<<Seconds<<") "<<"\n";
 	return false;
 }
 
