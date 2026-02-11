@@ -673,9 +673,11 @@ bool DecFile::Open(string _Name)
 	cout<<"sz="<<sz<<"\n";
 	cout<<"buf:"<<buf<<"\n";
 	
-	ofstream ofs("par.txt",std::ios::binary);
+	/*ofstream ofs("par.txt",std::ios::binary);
 	ofs.write(buf,sz);
 	ofs.close();
+	*/
+	
 	/*Int_t sz;
 	gzread(ff,&fmt,sizeof(Short_t)); 
 	if(fmt>128)
