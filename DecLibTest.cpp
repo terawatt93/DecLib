@@ -186,7 +186,7 @@ vector<TGraph> Counter::ToTGraphs()
     	{
     		Long64_t value=(*iter);
     		Long64_t value_prev=(*iter);
-      	gr.SetPoint(iterator,(*iterTstmp)/(1.0e8),value-prev);
+      	gr.SetPoint(iterator,(*iterTstmp)*fFile->Period/(1.0e9),value-prev);
       	prev=value_prev;
       	iterator++;
       	iterTstmp++;
@@ -375,7 +375,7 @@ bool DataBuffer::GetNextEvent(Event *ev)
 					ev->Pulses[ev->NPulses].Chan=(UChar_t) buf2[3];
 					ev->Pulses[ev->NPulses].Area=(*buf2u+gRandom->Rndm()-1.5)*0.2;
 					//ev->Pulses[ev->NPulses].Time = (buf2[1]+gRandom->Rndm()-0.5)*0.010; в нс при периоде 10 нс
-					ev->Pulses[ev->NPulses].Time = (buf2[1]+gRandom->Rndm()-0.5)*ev->fFile->Period/100; 
+					ev->Pulses[ev->NPulses].Time = (buf2[1]+gRandom->Rndm()-0.5)*ev->fFile->Period; 
 					ev->Pulses[ev->NPulses].Width = (buf2[2]+gRandom->Rndm()-0.5)*0.001;
 					ev->Pulses[ev->NPulses].Height = ((UInt_t) buf1u[7]) << 8;
 					ev->Pulses[ev->NPulses].fEvent=ev;
@@ -387,9 +387,9 @@ bool DataBuffer::GetNextEvent(Event *ev)
 	}
 	if(fDecManager->verbose>2)
 	{
-		int Seconds=int((double)LastTstmp/(ev->fFile->Period*1e7))%60;
-		int Minutes=(int((double)LastTstmp/(ev->fFile->Period*1e7))%3600)/60;
-		int Hours=int((double)LastTstmp/(ev->fFile->Period*1e7))/3600;
+		int Seconds=int((double)LastTstmp*(ev->fFile->Period/1e9))%60;
+		int Minutes=(int((double)LastTstmp*(ev->fFile->Period/1e9))%3600)/60;
+		int Hours=int((double)LastTstmp*(ev->fFile->Period/1e9))/3600;
 		cout<<"Buf:"<<ID<<" Nevents NReadEvents:"<<NEvents<<" "<<NReadEvents<<" ("<<Hours<<":"<<Minutes<<":"<<Seconds<<") "<<"\n";
 	}
 	return false;
@@ -686,7 +686,7 @@ bool DecFile::Open(string _Name)
 	gzread(ff,buf,sz);
 	ROptions.fFile=this;
 	ROptions.ReadFromBuffer(buf,sz);
-	
+	CountObject.fFile=this;
 	
 	cout<<"sz="<<sz<<"\n";
 	cout<<"buf:"<<buf<<"\n";

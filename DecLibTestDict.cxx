@@ -55,7 +55,7 @@ namespace ROOT {
       ::Pulse *ptr = nullptr;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::Pulse >(nullptr);
       static ::ROOT::TGenericClassInfo 
-         instance("Pulse", ::Pulse::Class_Version(), "DecLibTest.hh", 144,
+         instance("Pulse", ::Pulse::Class_Version(), "DecLibTest.hh", 145,
                   typeid(::Pulse), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &::Pulse::Dictionary, isa_proxy, 4,
                   sizeof(::Pulse) );
@@ -87,7 +87,7 @@ namespace ROOT {
       ::Event *ptr = nullptr;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::Event >(nullptr);
       static ::ROOT::TGenericClassInfo 
-         instance("Event", ::Event::Class_Version(), "DecLibTest.hh", 156,
+         instance("Event", ::Event::Class_Version(), "DecLibTest.hh", 157,
                   typeid(::Event), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &::Event::Dictionary, isa_proxy, 4,
                   sizeof(::Event) );
@@ -119,7 +119,7 @@ namespace ROOT {
       ::DecFile *ptr = nullptr;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::DecFile >(nullptr);
       static ::ROOT::TGenericClassInfo 
-         instance("DecFile", ::DecFile::Class_Version(), "DecLibTest.hh", 173,
+         instance("DecFile", ::DecFile::Class_Version(), "DecLibTest.hh", 174,
                   typeid(::DecFile), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &::DecFile::Dictionary, isa_proxy, 4,
                   sizeof(::DecFile) );
@@ -149,7 +149,7 @@ namespace ROOT {
       ::DecManager *ptr = nullptr;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::DecManager >(nullptr);
       static ::ROOT::TGenericClassInfo 
-         instance("DecManager", ::DecManager::Class_Version(), "DecLibTest.hh", 205,
+         instance("DecManager", ::DecManager::Class_Version(), "DecLibTest.hh", 206,
                   typeid(::DecManager), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &::DecManager::Dictionary, isa_proxy, 4,
                   sizeof(::DecManager) );

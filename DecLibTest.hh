@@ -71,6 +71,7 @@ class Counter
 	vector<list<Long64_t> > HWCounts;
 	void AddCount(int Ch,Long64_t _Tstmp,Long64_t Count);
 	vector<TGraph> ToTGraphs();
+	DecFile *fFile;//!
 };
 
 class DataBuffer
