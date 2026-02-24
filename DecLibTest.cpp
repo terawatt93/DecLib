@@ -5,6 +5,8 @@
 
 #include <condition_variable>
 #include <mutex>
+#include "romana_headers/BinRead.cpp"
+
 #pragma once
 
 std::mutex read_mutex;
@@ -328,7 +330,10 @@ bool DataBuffer::GetNextEvent(Event *ev)
 {
 	if(FirstEventWord==-1)
 	{
-		cout<<"This is bool DataBuffer::GetNextEvent(Event *ev): there are no events! False returned";
+		if(fDecManager->verbose>1)
+		{
+			cout<<"This is bool DataBuffer::GetNextEvent(Event *ev): there are no events! False returned";
+		}
 		return false;
 	}
 	if(LastRead==0)
@@ -369,7 +374,8 @@ bool DataBuffer::GetNextEvent(Event *ev)
 					}
 					ev->Pulses[ev->NPulses].Chan=(UChar_t) buf2[3];
 					ev->Pulses[ev->NPulses].Area=(*buf2u+gRandom->Rndm()-1.5)*0.2;
-					ev->Pulses[ev->NPulses].Time = (buf2[1]+gRandom->Rndm()-0.5)*0.01; 
+					//ev->Pulses[ev->NPulses].Time = (buf2[1]+gRandom->Rndm()-0.5)*0.010; в нс при периоде 10 нс
+					ev->Pulses[ev->NPulses].Time = (buf2[1]+gRandom->Rndm()-0.5)*ev->fFile->Period/100; 
 					ev->Pulses[ev->NPulses].Width = (buf2[2]+gRandom->Rndm()-0.5)*0.001;
 					ev->Pulses[ev->NPulses].Height = ((UInt_t) buf1u[7]) << 8;
 					ev->Pulses[ev->NPulses].fEvent=ev;
@@ -379,10 +385,13 @@ bool DataBuffer::GetNextEvent(Event *ev)
 			}
 		}
 	}
-	int Seconds=int((double)LastTstmp/1e8)%60;
-	int Minutes=(int((double)LastTstmp/1e8)%3600)/60;
-	int Hours=int((double)LastTstmp/1e8)/3600;
-	cout<<"Buf:"<<ID<<" Nevents NReadEvents:"<<NEvents<<" "<<NReadEvents<<" ("<<Hours<<":"<<Minutes<<":"<<Seconds<<") "<<"\n";
+	if(fDecManager->verbose>2)
+	{
+		int Seconds=int((double)LastTstmp/(ev->fFile->Period*1e7))%60;
+		int Minutes=(int((double)LastTstmp/(ev->fFile->Period*1e7))%3600)/60;
+		int Hours=int((double)LastTstmp/(ev->fFile->Period*1e7))/3600;
+		cout<<"Buf:"<<ID<<" Nevents NReadEvents:"<<NEvents<<" "<<NReadEvents<<" ("<<Hours<<":"<<Minutes<<":"<<Seconds<<") "<<"\n";
+	}
 	return false;
 }
 
@@ -559,6 +568,15 @@ vector<Pulse*> Event::GetPulses()
 
 void RomanaOptions::ReadFromBuffer(char *buf,int size)
 {
+	ReadFromBin(COptions,buf,size);
+	ReadFromBin(TOptions,buf,size);
+	
+	ToJSON(TOptions,jsTOptions);
+	ToJSON(COptions,jsCOptions);
+	
+	fFile->TStart=COptions.F_start/1000+788907600;
+	fFile->Period=TOptions.Period;
+	fFile->Comment=string(TOptions.Comment);
 	//формат: сначала идет длина имени, потом имя, потом длина блока данных, потом блок данных
 	//UShort_t len=0;
 	//char *bufEnd=buf+size;
@@ -577,7 +595,7 @@ void RomanaOptions::ReadFromBuffer(char *buf,int size)
 		//buf+=DataLen;
 		//cout<<"par: "<<Name<<" data size: "<<DataLen<<" "<<size<<"\n";
 	//}
-	char *buf2=buf+size;
+/*	char *buf2=buf+size;
 	TString classname;
   TString varname;
   TString memname;
@@ -628,7 +646,7 @@ void RomanaOptions::ReadFromBuffer(char *buf,int size)
       memname.Prepend(varname);
     }
     cout<<"par: m:"<<memname<<" c:"<<classname<<" v:"<<varname<<"\n";
-}
+}*/
 }
 
 bool DecFile::Open(string _Name)
@@ -663,20 +681,20 @@ bool DecFile::Open(string _Name)
 		cout << "Header not found: "<< endl;
 		return false;
 	}
-
+	
 	char *buf = new char[sz];
 	gzread(ff,buf,sz);
-	
+	ROptions.fFile=this;
 	ROptions.ReadFromBuffer(buf,sz);
 	
 	
 	cout<<"sz="<<sz<<"\n";
 	cout<<"buf:"<<buf<<"\n";
 	
-	/*ofstream ofs("par.txt",std::ios::binary);
+	ofstream ofs("par.bin",std::ios::binary);
 	ofs.write(buf,sz);
 	ofs.close();
-	*/
+	
 	
 	/*Int_t sz;
 	gzread(ff,&fmt,sizeof(Short_t)); 
@@ -722,6 +740,7 @@ bool DecManager::AddFile(DecFile *f)
 		}
 	}
 	Files.push_back(f);
+	ActiveFile=Files[Files.size()-1];
 	return true;
 }
 bool DecManager::AddFile(string filename)
@@ -877,8 +896,11 @@ void DecManager::FillBuffersInCycle()
 			}
 			if(!ActiveFile)
 			{
-				cout<<"This is DecManager::FillBuffers(): there are no files for reading.\n";
-				FileReadingFinished=true;
+				if(verbose>1)
+				{
+					cout<<"This is DecManager::FillBuffers(): there are no files for reading.\n";
+					FileReadingFinished=true;
+				}
 				return ;
 			}
 			ContinueReading=false;
@@ -926,7 +948,10 @@ bool DecManager::FillBuffers()
 	}
 	if(!ActiveFile)
 	{
-		cout<<"This is DecManager::FillBuffers(): there are no files for reading.\n";
+		if(verbose>1)
+		{
+			cout<<"This is DecManager::FillBuffers(): there are no files for reading.\n";
+		}
 		FileReadingFinished=true;
 		return false;
 	}
@@ -984,7 +1009,10 @@ bool DecManager::GetNextEvent(Event *ev, int ThreadID)
 			}
 			else
 			{
-				cout<<"FileReadingFinished signal obtained! "<<ThreadID<<"\n";
+				if(verbose>1)
+				{
+					cout<<"FileReadingFinished signal obtained! "<<ThreadID<<"\n";
+				}
 				return false;
 			}
 		}

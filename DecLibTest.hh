@@ -22,6 +22,10 @@
 #include <string>
 #include <vector>
 #include <list>
+
+#include "romana_headers/toptions.h"
+#include <nlohmann/json.hpp>
+
 #pragma once
 using namespace std;
 
@@ -131,6 +135,10 @@ class RomanaOptions
 {
 	public:
 	void ReadFromBuffer(char *buf,int size);
+	Toptions TOptions;
+	Coptions COptions;
+	nlohmann::json jsTOptions, jsCOptions;
+	DecFile *fFile=0;
 };
 
 class Pulse:public TObject
@@ -184,6 +192,12 @@ class DecFile:public TObject
 	bool Open(string _Name="");
 	vector<Long64_t> Counts;
 	Counter CountObject;
+	//избранные параметры измерения
+	long long TStart=0;//unix timestamp начала записи файла
+	double Period=10;//период оцифровки в нс
+	double Duration=0;//длительность измерения, если измерение было ограничено
+	string Comment="";
+	
 	ClassDef(DecFile,1);
 };
 
@@ -232,6 +246,7 @@ class DecManager:public TObject
 	ULong64_t MaxNEvents=0;
 	bool ContinueReading=false;
 	bool IsAnalysisFinished();
+	int verbose=0;
 	vector<ULong64_t> NEventsPerThread;
 	ClassDef(DecManager,1);
 };

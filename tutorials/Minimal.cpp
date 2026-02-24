@@ -18,7 +18,10 @@ void Minimal(string filename="run07_TUMC_Co_top.dec")
 	TH1F Spectrum("Spectrum","Spectrum",10000,0,10000);
 	Event ev;
 	dm.Start();
-
+	cout<<"TStart: "<<dm.ActiveFile->TStart<<"\n";
+	cout<<"Duration: "<<dm.ActiveFile->Duration<<"\n";
+	cout<<"Period: "<<dm.ActiveFile->Period<<"\n";
+	cout<<"Comment: "<<dm.ActiveFile->Comment<<"\n";
 	while(dm.GetNextEvent(&ev,0))
 	{
 		Pulse* pulse_hpge=ev.GetPulse(17);//импульс с hpge детектора

@@ -19,4 +19,5 @@ $(PROGRAM): $(SRCS)
 	@$(CXX) $(CXXFLAGS) $(SHARED) -o $@ $^ $(ROOTLIBS)
 	@echo "done"
 #options:
+install:; @echo 'export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:'`pwd`>>~/.bashrc; echo 'export CPATH=$$CPATH:'`pwd`>>~/.bashrc
 clean:; @rm -rf core *.so *.rootmap *.cxx *.pcm
