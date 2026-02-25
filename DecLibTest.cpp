@@ -577,6 +577,19 @@ void RomanaOptions::ReadFromBuffer(char *buf,int size)
 	fFile->TStart=COptions.F_start/1000+788907600;
 	fFile->Period=TOptions.Period;
 	fFile->Comment=string(TOptions.Comment);
+	
+	for(int i = 0; i<TOptions.Nchan; i++)
+	{
+		Channel ch;
+		ch.Number=i;
+		ch.On=COptions.on[ch.Number];
+		ch.Name=TOptions.ch_name[TOptions.chtype[i]-1];
+		ch.Calibration.push_back(TOptions.E0[ch.Number]);
+		ch.Calibration.push_back(TOptions.E1[ch.Number]);
+		ch.Calibration.push_back(TOptions.E2[ch.Number]);
+		Channels.push_back(ch);
+	}
+	
 	//формат: сначала идет длина имени, потом имя, потом длина блока данных, потом блок данных
 	//UShort_t len=0;
 	//char *bufEnd=buf+size;
@@ -688,12 +701,12 @@ bool DecFile::Open(string _Name)
 	ROptions.ReadFromBuffer(buf,sz);
 	CountObject.fFile=this;
 	
-	cout<<"sz="<<sz<<"\n";
+	/*cout<<"sz="<<sz<<"\n";
 	cout<<"buf:"<<buf<<"\n";
 	
 	ofstream ofs("par.bin",std::ios::binary);
 	ofs.write(buf,sz);
-	ofs.close();
+	ofs.close();*/
 	
 	
 	/*Int_t sz;

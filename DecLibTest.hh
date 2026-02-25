@@ -106,17 +106,10 @@ class Channel
 {
 	public:
 	string Name;
-	bool StartFlag, DSPFlag;
-	int Number;
-	Channel() { }
-	Channel(int _Number,string _Name, bool _Start, bool _Dsp) 
-	{
-		Number=_Number;
-		Name=_Name;
-		StartFlag=_Start;
-		DSPFlag=_Dsp;
-	}
+	int Number=-1, Threshold=0;
+	vector<double> Calibration;
 	string GetString(string option="full");
+	bool On=false;
 };
 
 /*class RomanaOptions
@@ -140,6 +133,7 @@ class RomanaOptions
 	Coptions COptions;
 	nlohmann::json jsTOptions, jsCOptions;
 	DecFile *fFile=0;
+	vector<Channel> Channels;
 };
 
 class Pulse:public TObject

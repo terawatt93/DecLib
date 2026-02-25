@@ -32,6 +32,14 @@ void ReadParameters(string filename="run07_TUMC_Co_top.dec")
 			cout<<i<<"\t"<<dm.ActiveFile->ROptions.TOptions.E0[i]<<"\t"<<dm.ActiveFile->ROptions.TOptions.E1[i]<<"\t"<<dm.ActiveFile->ROptions.TOptions.E2[i]<<"\n";
 		}
 	}
+	cout<<"Channel data:\nch\tOn\tName\ta0\ta1\ta2\n";
+	//также в ROptions есть вектор Channels, в котором хранятся номера каналов, названия, состояния и калибровки
+	for(unsigned int i=0;i<dm.ActiveFile->ROptions.Channels.size();i++)
+	{
+		Channel *ch=&dm.ActiveFile->ROptions.Channels[i];
+		cout<<ch->Number<<"\t"<<ch->On<<"\t"<<ch->Name<<"\t"<<ch->Calibration[0]<<"\t"<<ch->Calibration[1]<<"\t"<<ch->Calibration[2]<<"\n";
+	}
+	
 	//можем сохранить все параметры в json
 	ofstream TOptions("TOptions.json");
 	TOptions<<dm.ActiveFile->ROptions.jsTOptions.dump(4);
