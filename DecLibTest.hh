@@ -17,7 +17,9 @@
 #include <TClass.h> 
 #include <TSystem.h>   
 #include <map>  
-#include <mutex>  
+#include <mutex>
+#include <atomic>
+#include <unordered_set>  
 #include <TROOT.h>
 #include <string>
 #include <vector>
@@ -129,8 +131,21 @@ class RomanaOptions
 {
 	public:
 	void ReadFromBuffer(char *buf,int size);
-	Toptions TOptions;
-	Coptions COptions;
+    // Exists in the DEC header and successfully decoded into the Romana structure.
+    bool HasCOption(const std::string &name) const { return PresentCOptions.count(name) != 0; }
+    bool HasTOption(const std::string &name) const { return PresentTOptions.count(name) != 0; }
+    // For universal access: get an optional JSON value, including arrays.
+    bool TryGetCOption(const std::string &name, nlohmann::json &out) const {
+        if (!HasCOption(name) || !jsCOptions.contains(name)) return false;
+        out = jsCOptions.at(name); return true;
+    }
+    bool TryGetTOption(const std::string &name, nlohmann::json &out) const {
+        if (!HasTOption(name) || !jsTOptions.contains(name)) return false;
+        out = jsTOptions.at(name); return true;
+    }
+    std::unordered_set<std::string> PresentCOptions, PresentTOptions;
+	Toptions TOptions{};
+	Coptions COptions{};
 	nlohmann::json jsTOptions, jsCOptions;
 	DecFile *fFile=0;
 	vector<Channel> Channels;
@@ -226,7 +241,8 @@ class DecManager:public TObject
 	void Reopen();
 	void Reset();
 	bool ThereAreNotFinishedFiles=false;
-	bool FileReadingFinished=false;
+	std::atomic<bool> FileReadingFinished{false}; //! reader completion flag
+	std::mutex StateMutex; //! protects buffer ownership and initialization
 	ULong64_t PrevWord=0;
 	vector<Event> GetVectorOfEvents(int size,int ThreadID=0);
 	bool FillBuffers();

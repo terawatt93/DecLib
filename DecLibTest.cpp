@@ -6,6 +6,7 @@
 #include <condition_variable>
 #include <mutex>
 #include "romana_headers/BinRead.cpp"
+#include <new>
 
 #pragma once
 
@@ -228,9 +229,12 @@ void DataBuffer::Read(gzFile ff,ULong64_t &PrevWord)
 		SetSize(1e6);
 	}
 	if(!ff)
-	{
-		cout<<"Error in DataBuffer::Read(gzFile *ff): ff pointer is invalid!\n";
-	}
+    {
+        cout<<"Error in DataBuffer::Read: invalid gzFile\n";
+        FileEnded=true;
+        ReadyForRead=true;
+        return;
+    }
 	if(PrevWord>0)
 	{
 		Buf[0]=PrevWord;
@@ -242,7 +246,7 @@ void DataBuffer::Read(gzFile ff,ULong64_t &PrevWord)
 	{
 		int res=gzread(ff,&Buf[LastWord],8);
 		//if((!res)||(fDecManager->NEvents>5e7))
-		if((!res)||((fDecManager->NEventsPerThread[ThreadID]>fDecManager->MaxNEvents)&&(fDecManager->MaxNEvents>0)))
+		if((res!=8)||((fDecManager->NEventsPerThread[ThreadID]>=fDecManager->MaxNEvents)&&(fDecManager->MaxNEvents>0)))
 		{
 			FileEnded=true;
 			ReadyForRead=true;
@@ -255,7 +259,7 @@ void DataBuffer::Read(gzFile ff,ULong64_t &PrevWord)
 		if(frmt)
 		{
 			PrevState = UChar_t(Buf[LastWord]>>48);
-			if(fFile->FirstTstmp!=0)
+			if(fFile->FirstTstmp==0)
 			{
 				fFile->FirstTstmp=Buf[LastWord]&0xFFFFFFFFFFFF;
 			}
@@ -346,15 +350,16 @@ bool DataBuffer::GetNextEvent(Event *ev)
 		{
 			Long64_t Timestamp=Buf[LastRead] & sixbytes;
 			LastTstmp=Timestamp;
-			if(!ev)
-			{
-				ev=new Event();
-			}
+			if(!ev) return false;
 			ev->NPulses=0;
+			ev->fFile=fFile;
 			ev->Tstmp=Timestamp;
 			NReadEvents++;
 			LastRead++;
-			fDecManager->NEventsPerThread[ThreadID]++;
+			{
+				std::lock_guard<std::mutex> guard(fDecManager->StateMutex);
+				fDecManager->NEventsPerThread[ThreadID]++;
+			}
 			if(Timestamp>0)
 			{
 				while(LastRead<LastWord)
@@ -383,6 +388,7 @@ bool DataBuffer::GetNextEvent(Event *ev)
 					ev->NPulses++;
 				}
 			}
+			return true; // Last event in the buffer (including EOF).
 		}
 	}
 	if(fDecManager->verbose>2)
@@ -568,28 +574,52 @@ vector<Pulse*> Event::GetPulses()
 
 void RomanaOptions::ReadFromBuffer(char *buf,int size)
 {
-	ReadFromBin(COptions,buf,size);
-	ReadFromBin(TOptions,buf,size);
-	
-	ToJSON(TOptions,jsTOptions);
-	ToJSON(COptions,jsCOptions);
-	
-	fFile->TStart=COptions.F_start/1000+788907600;
-	fFile->Period=TOptions.Period;
-	fFile->Comment=string(TOptions.Comment);
-	
-	for(int i = 0; i<TOptions.Nchan; i++)
-	{
-		Channel ch;
-		ch.Number=i;
-		ch.On=COptions.on[ch.Number];
-		ch.Name=TOptions.ch_name[TOptions.chtype[i]-1];
-		ch.Calibration.push_back(TOptions.E0[ch.Number]);
-		ch.Calibration.push_back(TOptions.E1[ch.Number]);
-		ch.Calibration.push_back(TOptions.E2[ch.Number]);
-		Channels.push_back(ch);
-	}
-	
+    Channels.clear();
+    PresentCOptions.clear();
+    PresentTOptions.clear();
+    jsTOptions = nlohmann::json::object();
+    jsCOptions = nlohmann::json::object();
+    // Reset previous-file values, so an absent property never leaks from a
+    // previously opened DEC file. ROOT TObject-derived classes are assignable.
+	COptions.~Coptions();
+	new (&COptions) Coptions();
+
+	TOptions.~Toptions();
+	new (&TOptions) Toptions();
+    ReadFromBin(COptions, buf, size, &PresentCOptions);
+    ReadFromBin(TOptions, buf, size, &PresentTOptions);
+    ToJSON(COptions, jsCOptions);
+    ToJSON(TOptions, jsTOptions);
+    // JSON keys indicate actual presence, not merely members of the schema.
+    for (auto it=jsCOptions.begin(); it!=jsCOptions.end(); ) {
+        if (it.key() != "Class" && !HasCOption(it.key())) it=jsCOptions.erase(it);
+        else ++it;
+    }
+    for (auto it=jsTOptions.begin(); it!=jsTOptions.end(); ) {
+        if (it.key() != "Class" && !HasTOption(it.key())) it=jsTOptions.erase(it);
+        else ++it;
+    }
+    if (!fFile) throw std::runtime_error("RomanaOptions has no DecFile");
+    // Only update derived properties when their source exists in the header.
+    if (HasCOption("F_start")) fFile->TStart = COptions.F_start/1000+788907600;
+    if (HasTOption("Period")) fFile->Period = TOptions.Period;
+    if (HasTOption("Comment")) fFile->Comment = romana_bin_detail::bounded(TOptions.Comment);
+    const int count = HasTOption("Nchan") ? std::max(0, std::min(TOptions.Nchan, MAX_CHTP)) : 0;
+    for (int i=0; i<count; ++i) {
+        Channel ch;
+        ch.Number=i;
+        ch.On=HasCOption("on") ? COptions.on[i] : false;
+        const int kind=HasTOption("chtype") ? TOptions.chtype[i] : 0;
+        if (HasTOption("ch_name") && kind >= 1 && kind <= MAX_TP)
+            ch.Name=romana_bin_detail::bounded(TOptions.ch_name[kind-1]);
+        else
+            ch.Name="Channel " + std::to_string(i);
+        ch.Calibration.push_back(HasTOption("E0") ? TOptions.E0[i] : 0);
+        ch.Calibration.push_back(HasTOption("E1") ? TOptions.E1[i] : 0);
+        ch.Calibration.push_back(HasTOption("E2") ? TOptions.E2[i] : 0);
+        Channels.push_back(ch);
+    }
+
 	//формат: сначала идет длина имени, потом имя, потом длина блока данных, потом блок данных
 	//UShort_t len=0;
 	//char *bufEnd=buf+size;
@@ -674,31 +704,51 @@ bool DecFile::Open(string _Name)
 		cout<<"Cannot open "<<Name<<"\n";
 		return false;
 	}
-	Int_t sz;
-	gzread(ff,&fmt,sizeof(Short_t));
+	Int_t sz=0;
+    auto readExact = [&](void *dst, unsigned n) -> bool {
+        return gzread(ff, dst, n) == static_cast<int>(n);
+    };
+    if (!readExact(&fmt, sizeof(Short_t))) {
+        gzclose(ff); ff=nullptr; return false;
+    }
 	if (fmt==129)
 	{
-		gzread(ff,&mod,sizeof(Short_t));
-		gzread(ff,&sz,sizeof(Int_t));
+		if (!readExact(&mod,sizeof(Short_t)) || !readExact(&sz,sizeof(Int_t))) {
+            gzclose(ff); ff=nullptr; return false;
+        }
 	}
 	else
 	{
 		mod=fmt;
 		fmt=129;
-		gzread(ff,&sz,sizeof(UShort_t));
+		UShort_t shortSize=0;
+        if (!readExact(&shortSize,sizeof(shortSize))) {
+            gzclose(ff); ff=nullptr; return false;
+        }
+        sz=shortSize;
 	}
 
-	if (fmt!=129 || mod>100 || sz>5e5)
+	if (fmt!=129 || mod>100 || sz<=0 || sz>500000)
 	{//возможно, это текстовый файл
 		//или старый файл без параметров
 		cout << "Header not found: "<< endl;
+        gzclose(ff);
+        ff=nullptr;
 		return false;
 	}
 	
-	char *buf = new char[sz];
-	gzread(ff,buf,sz);
-	ROptions.fFile=this;
-	ROptions.ReadFromBuffer(buf,sz);
+	std::vector<char> buf(static_cast<size_t>(sz));
+    if (!readExact(buf.data(), static_cast<unsigned>(sz))) {
+        std::cerr << "Incomplete Romana parameter header in " << Name << "\n";
+        gzclose(ff); ff=nullptr; return false;
+    }
+    ROptions.fFile=this;
+    try {
+        ROptions.ReadFromBuffer(buf.data(),sz);
+    } catch (const std::exception &e) {
+        std::cerr << "Invalid Romana parameters in " << Name << ": " << e.what() << "\n";
+        gzclose(ff); ff=nullptr; return false;
+    }
 	CountObject.fFile=this;
 	
 	/*cout<<"sz="<<sz<<"\n";
@@ -770,7 +820,11 @@ bool DecManager::AddFile(string filename)
 		}
 	}
 	DecFile *f=new DecFile();
-	f->Open(filename);
+	if (!f->Open(filename))
+    {
+        delete f;
+        return false;
+    }
 	if(!AddFile(f))
 	{
 		delete f;
@@ -786,6 +840,7 @@ void DecManager::SetNThreads(int _NThreads)
 	ActiveBuffers.resize(0);
 	ActiveBuffers.resize(NThreads);
 	InitializedForThread.resize(NThreads);
+    std::fill(NEventsPerThread.begin(), NEventsPerThread.end(), 0);
 	for(int i=0;i<NThreads;i++)
 	{
 		InitializedForThread[i]=false;
@@ -823,50 +878,49 @@ bool AreThreeFreeBuffers(vector<DataBuffer> *Buffers)
 	}
 	return false;
 }
-void CheckAndFillBuffers(vector<DataBuffer> *Buffers,DecFile *f,ULong64_t &PrevWord)//остановился тут
+void CheckAndFillBuffers(vector<DataBuffer> *Buffers, DecFile *f, ULong64_t &PrevWord)
 {
-	//cout<<"CheckAndFillBuffers\n";
-	if(DecManager::Instance().FillingNow)
-	{
-		return;
-	}
-	DecManager::Instance().FillingNow=true;
-	if(f->Finished)
-	{
-		cout<<"File "<<f->Name<<" is finished\n";
-	}
-	
-	while(1)
-	{
-	//	bool ThereAreFreeBuffers=true;
-		for(unsigned int i=0;i<Buffers->size();i++)
-		{
-			//cout<<" "<<i<<" "<<Buffers->at(i).LastWord<<"\n";
-			if(Buffers->at(i).LastWord==0)
-			{
-				Buffers->at(i).fFile=f;
-				Buffers->at(i).Read(f->ff,PrevWord);
-			}
-			if((!Buffers->at(i).fDecManager->InitializedForThread[i])&&(i<Buffers->at(i).fDecManager->InitializedForThread.size()))
-			{
-				Buffers->at(i).fDecManager->InitializedForThread[i]=true;
-				Buffers->at(i).fDecManager->ActiveBuffers[i]=&(Buffers->at(i));
-				Buffers->at(i).fDecManager->ActiveBuffers[i]->Active=true;
-				Buffers->at(i).fDecManager->ActiveBuffers[i]->ThreadID=i;
-			}
-			if(Buffers->at(i).FileEnded)
-			{
-				f->Finished=true;
-				DecManager::Instance().FillingNow=false;
-				return;
-			}
-		}
-		if(!AreThreeFreeBuffers(Buffers))
-		{
-			break;
-		}
-	}
-	DecManager::Instance().FillingNow=false;
+    DecManager &dm = DecManager::Instance();
+    // The state lock publishes complete buffers and prevents concurrent reset/assignment.
+    // The file reader is single-threaded; no other thread may read the same gzFile.
+    std::unique_lock<std::mutex> guard(dm.StateMutex);
+    if (dm.FillingNow) return;
+    dm.FillingNow = true;
+    while (true)
+    {
+        bool anyFree = false;
+        for (size_t i = 0; i < Buffers->size(); ++i)
+        {
+            DataBuffer &buffer = (*Buffers)[i];
+            if (buffer.LastWord != 0) continue;
+            anyFree = true;
+            buffer.fFile = f;
+            // A buffer can be assigned to a consumer only after Read returns.
+            buffer.Read(f->ff, PrevWord);
+            if (buffer.FileEnded) f->Finished = true;
+            // Initialize only actual consumer threads, never by using an unchecked buffer index.
+            for (size_t tid = 0; tid < dm.InitializedForThread.size(); ++tid)
+            {
+                if (dm.InitializedForThread[tid]) continue;
+                if (!buffer.ReadyForRead || buffer.FirstEventWord == -1) continue;
+                if (buffer.Active) continue;
+                dm.ActiveBuffers[tid] = &buffer;
+                buffer.Active = true;
+                buffer.ThreadID = static_cast<int>(tid);
+                dm.InitializedForThread[tid] = true;
+                break;
+            }
+            if (buffer.FileEnded)
+            {
+                dm.FillingNow = false;
+                return;
+            }
+        }
+        if (!anyFree) break;
+        // If there is no data and the file has ended, do not loop on empty buffers.
+        if (f->Finished) break;
+    }
+    dm.FillingNow = false;
 }
 
 void DecManager::Start()
@@ -879,8 +933,13 @@ void DecManager::FillBuffersInCycle()
 	cout<<"startup\n";
 	while(1)
 	{
-		if(AreThreeFreeBuffers(&Buffers))
-		{
+		bool freeBuffer = false;
+        {
+            std::lock_guard<std::mutex> guard(StateMutex);
+            freeBuffer = AreThreeFreeBuffers(&Buffers);
+        }
+        if(freeBuffer)
+        {
 			ThereAreNotFinishedFiles=false;
 			if(ActiveFile)
 			{
@@ -909,12 +968,10 @@ void DecManager::FillBuffersInCycle()
 			}
 			if(!ActiveFile)
 			{
-				if(verbose>1)
-				{
-					cout<<"This is DecManager::FillBuffers(): there are no files for reading.\n";
-					FileReadingFinished=true;
-				}
-				return ;
+				FileReadingFinished=true;
+                if(verbose>1)
+                    cout<<"This is DecManager::FillBuffers(): there are no files for reading.\n";
+                return;
 			}
 			ContinueReading=false;
 			CheckAndFillBuffers(&Buffers,ActiveFile,PrevWord);
@@ -978,134 +1035,59 @@ bool DecManager::FillBuffers()
 }
 bool DecManager::GetNextEvent(Event *ev, int ThreadID)
 {
-	//cout<<"GetNextEvent\n";
-	if(ThreadID>NThreads-1)
-	{
-		cout<<"This is DecManager::GetNextEvent(Event *ev, int ThreadID): Invalid ThreadID, NThreads="<<NThreads<<", ThreadID="<<ThreadID<<". False returned!\n";
-		return false;
-	}
-	while(!InitializedForThread[ThreadID])
-	{
-		std::this_thread::sleep_for(std::chrono::microseconds(1));
-		if((FileReadingFinished)&&(!InitializedForThread[ThreadID]))
-		{
-			return false;
-		}
-		//cout<<"Init for thread "<<ThreadID<<"\n";
-		//FillBuffers();
-		/*for(unsigned int i=0;i<ActiveBuffers.size();i++)
-		{
-			ActiveBuffers[i]=&Buffers[i];
-			ActiveBuffers[i]->ThreadID=ThreadID;
-		}*/
-		
-	}
-	if(ActiveBuffers[ThreadID]->GetNextEvent(ev))
-	{
-		return true;
-	}
-	else
-	{
-	/*	ofstream ofs(TString::Format("lod_g%d.txt",ThreadID),ios::app);
-		ofs<<ThreadID<<" "<<ActiveBuffers[ThreadID]->NReadEvents<<" "<<ActiveBuffers[ThreadID]->NEvents<<"\n";
-		cout<<"ActiveBuffers["<<ThreadID<<"]->NReadEvents "<<ActiveBuffers[ThreadID]->NReadEvents<<" "<<ActiveBuffers[ThreadID]->NEvents<<"\n";
-		ofs.close();
-		ActiveBuffers[ThreadID]->Reset();*/
-		//cout<<"Reset buffer "<<ThreadID<<"\n";
-		ActiveBuffers[ThreadID]->Reset();
-		//cout<<"Assign next buffer for "<<ThreadID<<"\n";
-		while(!AssignBuffers(ThreadID))
-		{
-			if(!FileReadingFinished)
-			{
-				std::this_thread::sleep_for(std::chrono::seconds(1));
-			}
-			else
-			{
-				if(verbose>1)
-				{
-					cout<<"FileReadingFinished signal obtained! "<<ThreadID<<"\n";
-				}
-				return false;
-			}
-		}
-		if(ActiveBuffers[ThreadID]->GetNextEvent(ev))
-		{
-			return true;
-		}
-		ActiveBuffers[ThreadID]->Active=false;
-	}
-	return false;
-		/*if(!AssignBuffers(ThreadID))
-		{
-			while(1)
-			{
-				//cout<<"Check buffers\n";
-				if(AssignBuffers(ThreadID))
-				{
-				//	cout<<"return next event\n";
-					return ActiveBuffers[ThreadID]->GetNextEvent(ev);
-				}
-				else if(!FileReadingFinished)
-				{
-				//	cout<<"waiting\n";
-					std::this_thread::sleep_for(std::chrono::microseconds(1));
-				}
-				else
-				{
-				//	cout<<"return false\n";
-					return false;
-				}
-			}
-		}
-	}
-	cout<<"Call FillBuffers for thread "<<ThreadID<<"\n";
-
-	
-
-	//return FillBuffers();*/
-	
+    if (!ev || ThreadID < 0 || ThreadID >= NThreads) return false;
+    while (true)
+    {
+        DataBuffer *buffer = nullptr;
+        {
+            std::lock_guard<std::mutex> guard(StateMutex);
+            if (InitializedForThread[ThreadID])
+                buffer = ActiveBuffers[ThreadID];
+        }
+        if (!buffer)
+        {
+            if (FileReadingFinished) return false;
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            continue;
+        }
+        if (buffer->GetNextEvent(ev)) return true;
+        {
+            std::lock_guard<std::mutex> guard(StateMutex);
+            // Release exhausted buffer; background reader may now reuse it.
+            buffer->Reset();
+            ActiveBuffers[ThreadID] = nullptr;
+            if (AssignBuffers(ThreadID)) continue;
+        }
+        // No ready buffer at this moment. EOF is final only when no unclaimed
+        // ready buffer remains; loop checks both conditions under the state lock.
+        while (true)
+        {
+            {
+                std::lock_guard<std::mutex> guard(StateMutex);
+                if (AssignBuffers(ThreadID)) break;
+                if (FileReadingFinished) return false;
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+    }
 }
 
+// Caller must hold StateMutex.
 bool DecManager::AssignBuffers(int ThreadID)
 {
-	
-	for(unsigned int i=0;i<Buffers.size();i++)
-	{
-		if((Buffers[i].LastWord>0)&&(Buffers[i].FirstEventWord!=-1)&&(Buffers[i].ReadyForRead)&&(!Buffers[i].Active))
-		{
-			ActiveBuffers[ThreadID]=&Buffers[i];
-			ActiveBuffers[ThreadID]->Active=true;
-			ActiveBuffers[ThreadID]->ThreadID=ThreadID;
-			return true;
-		}/*
-			if()
-
-			bool IsAvalible=true;
-			for(unsigned int j=0;j<ActiveBuffers.size();j++)
-			{
-				cout<<"Buf id:"<<Buffers[i].ID<<" ActiveID:"<<ActiveBuffers[j]->ID<<" is Active: "<<ActiveBuffers[j]->Active<<"\n";
-				if((Buffers[i].ID==ActiveBuffers[j]->ID)&&(ActiveBuffers[j]->Active))
-				{
-					IsAvalible=false;
-				}
-			}
-			cout<<"IsAvalible:"<<IsAvalible<<"\n";
-			if(IsAvalible)
-			{
-				cout<<"Avalible\n";
-				if(Buffers[i].ReadyForRead)
-				{
-					ActiveBuffers[ThreadID]=&Buffers[i];
-					ActiveBuffers[ThreadID]->Active=true;
-					ActiveBuffers[ThreadID]->ThreadID=ThreadID;
-					cout<<"Assign buffer "<<ActiveBuffers[ThreadID]->ID<<" to thread "<<ThreadID<<"\n";
-					return true;
-				}
-			}
-		}*/
-	}
-	return false;
+    for (auto &buffer : Buffers)
+    {
+        if (buffer.LastWord > 0 && buffer.FirstEventWord != -1 &&
+            buffer.ReadyForRead && !buffer.Active)
+        {
+            ActiveBuffers[ThreadID] = &buffer;
+            buffer.Active = true;
+            buffer.ThreadID = ThreadID;
+            InitializedForThread[ThreadID] = true;
+            return true;
+        }
+    }
+    return false;
 }
 
 Event DecManager::GetCopyOfNextEvent(int ThreadID)
@@ -1123,8 +1105,14 @@ void DecManager::Reopen()
 	}
 	for(unsigned int i=0;i<Files.size();i++)
 	{
+        if (Files[i]->ff) gzclose(Files[i]->ff);
+        Files[i]->Finished = false;
 		Files[i]->Open(Files[i]->Name);
 	}
+    PrevWord=0;
+    FileReadingFinished=false;
+    std::fill(InitializedForThread.begin(), InitializedForThread.end(), false);
+    std::fill(ActiveBuffers.begin(), ActiveBuffers.end(), nullptr);
 }
 void DecManager::Reset()
 {
@@ -1133,10 +1121,15 @@ void DecManager::Reset()
 		Buffers[i].Reset();
 	}
 	Files.resize(0);
+    ActiveFile=nullptr;
+    PrevWord=0;
+    std::fill(InitializedForThread.begin(), InitializedForThread.end(), false);
+    std::fill(ActiveBuffers.begin(), ActiveBuffers.end(), nullptr);
 	FileReadingFinished=false;
 }
 bool DecManager::IsAnalysisFinished()
 {
+    std::lock_guard<std::mutex> guard(StateMutex);
 	for(unsigned int i=0;i<Buffers.size();i++)
 	{
 		//cout<<"Buffers["<<i<<"] "<<Buffers[i].Active<<"\n";
